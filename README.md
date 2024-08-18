@@ -1,5 +1,6 @@
+# QMCDecoder
 ## Overview
-Decrypt / Decode QQMusic QMC (qmcv2) with tail is "STag"
+Decrypt / Decode QQMusic QMC (qmcv2) with tail is "STag" in Julia.
 
 ***ONLY SUPPORT QMCv2/rc4/mflac***
 ## Installation
