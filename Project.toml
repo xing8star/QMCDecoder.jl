@@ -1,0 +1,8 @@
+name = "QMCDecoder"
+uuid = "906d63b3-073f-42b4-a1a4-ea1de28b8348"
+authors = ["xing8star <xing0star@live.hk>"]
+version = "0.1.0"
+
+[deps]
+Base64 = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
+SafeThrow = "94fead55-380b-4cb9-a752-d2f75d1823c8"

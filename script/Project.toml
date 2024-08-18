@@ -1,0 +1,4 @@
+[deps]
+ArgumentProcessor = "da5e4181-4678-44ac-9e93-56ca85e03b1f"
+QMCDecoder = "906d63b3-073f-42b4-a1a4-ea1de28b8348"
+SQLite = "0aa819cd-b072-5ff4-a722-6bc24af294d9"
