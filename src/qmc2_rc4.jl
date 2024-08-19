@@ -49,29 +49,30 @@ function encode_other_segment(buffer::Vector{UInt8},s::QMCv2RC4,offset::Integer)
 end
 
 function decipher_buffer(buffer::Vector{UInt8},s::QMCv2RC4,offset::Integer)
-    io=IOBuffer()
-    if offset<INITIAL_SEGMENT_SIZE
+    outbuffer=UInt8[]
+    if offset<=INITIAL_SEGMENT_SIZE
         _len=min(length(buffer),INITIAL_SEGMENT_SIZE-offset)
         segment, rest=splitat(buffer,_len)
-        write(io,encode_first_segment!(segment,s,offset))
-        offset+=_lenINITIAL_SEGMENT_SIZE
+        append!(outbuffer,encode_first_segment!(segment,s,offset))
+        offset+=INITIAL_SEGMENT_SIZE
         buffer=rest
     end
     if (offset % OTHER_SEGMENT_SIZE) != 0 
         _len = OTHER_SEGMENT_SIZE - (offset % OTHER_SEGMENT_SIZE);
         _len = min(length(buffer), _len);
         segment, rest=splitat(buffer,_len)
-        write(io,encode_other_segment(segment,s,offset))
+        append!(outbuffer,encode_other_segment(segment,s,offset))
         offset += _len;
         buffer = rest;
     end
-    for i in 1:OTHER_SEGMENT_SIZE:length(buffer)
-        _len = min(i+OTHER_SEGMENT_SIZE-1,length(buffer));
-        segment=buffer[i:_len]
-        write(io,encode_other_segment(segment,s,offset))
+    for _ in 1:OTHER_SEGMENT_SIZE:length(buffer)
+        _len = min(OTHER_SEGMENT_SIZE,length(buffer));
+        segment, rest=splitat(buffer,_len)
+        append!(outbuffer,encode_other_segment(segment,s,offset))
         offset += _len;
+        buffer = rest;
     end
-    io
+    outbuffer
 end
 
 function decrypt_stright(io::IO,out_stream::IO,s::QMCv2RC4)

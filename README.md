@@ -20,7 +20,6 @@ decode(mflac_file,ekey)
 ```
 
 ## Script
-Firstly need to instantiate the 'script' project.
 
 Optional in [].
 
@@ -29,8 +28,9 @@ julia --project=script script/dump.jl "yourmusic.mflac0.flac" "ekey" ["output fi
 ```
 "output file name" no need extension suffix.
 
+dump2.jl firstly need to instantiate the 'script' project.
 ```bash
-julia --project=script script/dump2.jl -i "yourmusic.mflac0.flac"/"musics_dir/" [-d "player_process_db"] [-o "output file dir"]
+julia --project=script script/dump2.jl --keep -i "yourmusic.mflac0.flac"/"musics_dir/" [-d "player_process_db"] [-o "output file dir"]
 ```
 
 Default database is "player_process_db". Please ensure the sqlite is extracted in Android.

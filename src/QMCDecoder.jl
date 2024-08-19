@@ -4,6 +4,7 @@ decode,
 isqmc
 using SafeThrow
 include("qmc2_rc4.jl")
+include("tail.jl")
 struct QQMusicV2
     filenamepath::String
     ekey::String
@@ -20,15 +21,23 @@ end
 @add_safefunction function QQMusicV2(file_path::AbstractString,ekey::AbstractString)
     f=open(file_path)
     seekend(f);skip(f,-4)
-    max_read=position(f)
     header=read(f)
+    max_read=position(f)
+    if header!=b"STag" 
+        close(f)
+        throw(ErrorException("Not is a STag file."))
+    end
+    max_read-=get_tail_len(f,AndroidSTagMetadata)
     close(f)
-    header==b"STag" || throw(ErrorException("Not is a STag file."))
     file_upper_path,_=splitext(file_path)
     QQMusicV2(file_upper_path,ekey,QMCv2RC4(ekey),max_read,open(file_path))
 end
 
-
+function Base.read(s::QQMusicV2,nb::Integer=typemax(Int))
+    eof(s.io)&&return UInt8[]
+    offset=position(s.io)
+    decipher_buffer(read(s.io,nb),s.decipher,offset)
+end
 function decode(x::QQMusicV2,out::IO=IOBuffer())
     io=x.io;s=x.decipher;
     # buffer_len=OTHER_SEGMENT_SIZE
