@@ -7,12 +7,9 @@ make_simple_key(n::Int)=UInt8[floor(abs(tan(106 + i * 0.1)) * 100) for i in 0:n-
 function decrypt_v1(ekey)
     ekey=base64decode(ekey)
     header,cipher=ekey[1:8],ekey[9:end]
-    # simple_key=make_simple_key(8)
-    tea_key=UInt8[]
-    foreach(zip(make_simple_key(8),header)) do x
-        append!(tea_key,x)
-    end
-    # plaintext = decrypt(cipher, tea_key)
+    tea_key=zeros(UInt8,16)
+    tea_key[1:2:16]=make_simple_key(8)
+    tea_key[2:2:16]=header
     vcat(header,decrypt(cipher, tea_key))
 end
 

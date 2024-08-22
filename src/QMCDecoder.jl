@@ -4,6 +4,7 @@ decode,
 isqmc
 using SafeThrow
 include("qmc2_rc4.jl")
+include("tail.jl")
 struct QQMusicV2
     filenamepath::String
     ekey::String
@@ -20,26 +21,36 @@ end
 @add_safefunction function QQMusicV2(file_path::AbstractString,ekey::AbstractString)
     f=open(file_path)
     seekend(f);skip(f,-4)
-    max_read=position(f)
     header=read(f)
+    max_read=position(f)
+    if header!=b"STag" 
+        close(f)
+        throw(ErrorException("Not is a STag file."))
+    end
+    max_read-=get_tail_len(f,AndroidSTagMetadata)
     close(f)
-    header==b"STag" || throw(ErrorException("Not is a STag file."))
     file_upper_path,_=splitext(file_path)
     QQMusicV2(file_upper_path,ekey,QMCv2RC4(ekey),max_read,open(file_path))
 end
 
-
+function Base.read(s::QQMusicV2,nb::Integer=typemax(Int))
+    eof(s.io)&&return UInt8[]
+    offset=position(s.io)
+    block=read(s.io,nb)
+    decipher_buffer!(block,s.decipher,offset)
+    block
+end
 function decode(x::QQMusicV2,out::IO=IOBuffer())
     io=x.io;s=x.decipher;
     # buffer_len=OTHER_SEGMENT_SIZE
     write(out,encode_first_segment!(read(io,INITIAL_SEGMENT_SIZE),s,0))
     offset=INITIAL_SEGMENT_SIZE
-    write(out,encode_other_segment(read(io,OTHER_SEGMENT_SIZE - offset),s,offset))
+    write(out,encode_other_segment!(read(io,OTHER_SEGMENT_SIZE - offset),s,offset))
     offset=OTHER_SEGMENT_SIZE
     while !eof(io)
         block=read(io,OTHER_SEGMENT_SIZE)
         read_len=length(block)
-        write(out,encode_other_segment(block,s,offset))
+        write(out,encode_other_segment!(block,s,offset))
         offset+=read_len
     end
     out
@@ -50,7 +61,7 @@ function decode(x::QQMusicV2,max_read::Integer,out::IO=IOBuffer())
     bytes_processed=0
     write(out,encode_first_segment!(read(io,INITIAL_SEGMENT_SIZE),s,0))
     offset=INITIAL_SEGMENT_SIZE
-    write(out,encode_other_segment(read(io,OTHER_SEGMENT_SIZE - offset),s,offset))
+    write(out,encode_other_segment!(read(io,OTHER_SEGMENT_SIZE - offset),s,offset))
     offset=OTHER_SEGMENT_SIZE
     bytes_processed+=INITIAL_SEGMENT_SIZE+OTHER_SEGMENT_SIZE
     while !eof(io)
@@ -58,7 +69,7 @@ function decode(x::QQMusicV2,max_read::Integer,out::IO=IOBuffer())
         if block_len==0 break end
         block=read(io,block_len)
         read_len=length(block)
-        write(out,encode_other_segment(block,s,offset))
+        write(out,encode_other_segment!(block,s,offset))
         offset+=read_len
         bytes_processed+=read_len
     end

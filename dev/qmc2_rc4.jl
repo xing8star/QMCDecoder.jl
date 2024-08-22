@@ -82,7 +82,36 @@ function decipher_buffer(buffer::Vector{UInt8},s::QMCv2RC4,offset::Int)
     end
     io
 end
-
+function decipher_buffer!(buffer::Vector{UInt8},s::QMCv2RC4,offset::Integer)
+    # outbuffer=UInt8[]
+    if offset<INITIAL_SEGMENT_SIZE
+        _len=min(length(buffer),INITIAL_SEGMENT_SIZE-offset)
+        segment, rest=splitat_view(buffer,_len)
+        encode_first_segment!(segment,s,offset)
+        # append!(outbuffer,encode_first_segment!(segment,s,offset))
+        offset+=INITIAL_SEGMENT_SIZE
+        buffer=rest
+    end
+    if (offset % OTHER_SEGMENT_SIZE) != 0 
+        _len = OTHER_SEGMENT_SIZE - (offset % OTHER_SEGMENT_SIZE);
+        _len = min(length(buffer), _len);
+        segment, rest=splitat_view(buffer,_len)
+        encode_other_segment!(segment,s,offset)
+        # append!(outbuffer,encode_other_segment!(segment,s,offset))
+        offset += _len;
+        buffer = rest;
+    end
+    for _ in 1:OTHER_SEGMENT_SIZE:length(buffer)
+        _len = min(OTHER_SEGMENT_SIZE,length(buffer));
+        segment, rest=splitat_view(buffer,_len)
+        encode_other_segment!(segment,s,offset)
+        # append!(outbuffer,encode_other_segment!(segment,s,offset))
+        offset += _len;
+        buffer = rest;
+    end
+    # outbuffer
+    nothing
+end
 # function decrypt(write_callback::Function,io,offset,max_read,buffer_len)
 #     bytes_processed=0
 #     while !eof(io)
