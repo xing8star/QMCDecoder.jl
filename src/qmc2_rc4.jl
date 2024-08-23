@@ -45,7 +45,7 @@ function encode_other_segment!(buffer::AbstractVector{UInt8},s::QMCv2RC4,offset:
     segment_key=get_segment_key(key_hash,segment_idx,key[(segment_idx%key_len)+1])
     skip_len=segment_key&0x1FF
     _len=min(length(buffer),OTHER_SEGMENT_SIZE-segment_offset)
-    buffer[begin:_len].⊻=s.key_stream[skip_len+segment_offset+1:end][1:_len]
+    buffer[begin:_len].⊻=@view s.key_stream[skip_len+segment_offset+1:end][1:_len]
 end
 
 function decipher_buffer!(buffer::Vector{UInt8},s::QMCv2RC4,offset::Integer)

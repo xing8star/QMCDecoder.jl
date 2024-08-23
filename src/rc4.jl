@@ -1,5 +1,5 @@
 
-function init_state(key::AbstractVector{UInt8})
+function init_state(key::AbstractVector{UInt8})::Vector{Int}
     n=length(key)
     state=(0:n-1).&0xff
     j=0
@@ -11,9 +11,9 @@ function init_state(key::AbstractVector{UInt8})
 end
 
 function rc4(key::AbstractVector{UInt8})
-    state=init_state(key)
-    i,j=zeros(Int,2)
-    n=length(state)
+    state::Vector{Int}=init_state(key)
+    i::Int,j::Int=zeros(Int,2)
+    n::Int=length(state)
     function next()
         i=(i+1)%n
         j=(j+state[i+1])%n

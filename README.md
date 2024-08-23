@@ -6,8 +6,8 @@ Decrypt / Decode QQMusic QMC (qmcv2) with tail is "STag" in Julia.
 ## Installation
 
 ```julia-repl
-(@v1.10) pkg> add https://github.com/xing8star/QMCDecoder.jl
 (@v1.10) pkg> add https://github.com/xing8star/SafeThrow.jl
+(@v1.10) pkg> add https://github.com/xing8star/QMCDecoder.jl
 ```
 
 ## Example
